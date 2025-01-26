@@ -2,6 +2,7 @@
 pragma solidity ^0.8.8;
 
 contract Voting{
+
     struct Candidate {
         uint256 id;
         string name;
@@ -26,7 +27,7 @@ contract Voting{
     uint256 public candidatesCount;
     uint256 public votersCount;
 
-    event VoterResgistered(address voter);
+    event VoterRegistered(address voter);
     event CandidateAdded(uint256 candidateId, string name);
     event VoteCast(address voter, uint256 candidateId);
     event VotingStarted();
@@ -52,4 +53,32 @@ contract Voting{
         require(votingEnded, "voting has not ended");
         _;
     }
+    function registerVoter(address _voter) public onlyOwner beforeVoting {
+        require(_voter != address(0), "Invalid address");
+        require(!voters[_voter].isRegistered, "Voter already registered");
+
+        voters[_voter] = Voter({
+            isRegistered: true,
+            hasVoted: false,
+            votedCandidateId: 0
+        });
+
+        votersCount += 1;
+
+        emit VoterRegistered(_voter);
+    }
+    
+    function addCandidate(string memory _name) public onlyOwner beforeVoting {
+        require(bytes(_name).length > 0, "the name can't be empty");
+        candidates[_name] = Candidate({
+            id: candidateCounts,
+            name: _name,
+            voteCount: 0
+        });
+        emit CandidateAdded(candidatesCount, _name);
+    }
+
+    
 }
+
+   
